@@ -1,36 +1,50 @@
-## Put comments here that give an overall description of what your
-## functions do
+## Matrix inversion is usually a costly computation and there may be some benefit to caching 
+## the inverse of a matrix rather than compute it repeatedly
 
-## Write a short comment describing this function
+## makeCacheMatrix creates a special "matrix" object that can cache its inverse.
 
-makeCacheMatrix <- function(x = matrix()) {
-##  makeVector <- function(x = numeric()) {
-    m <- NULL
-    set <- function(y) {
-      x <<- y
-      m <<- NULL
+makeCacheMatrix <- function(cached_matrix = matrix()) {
+    cached_solve <- NULL
+    set <- function(matrix) {
+        cached_matrix <<- matrix
+        cached_solve <<- NULL
     }
-    get <- function() x
-    setmean <- function(mean) m <<- mean
-    getmean <- function() m
-    list(set = set, get = get,
-         setmean = setmean,
-         getmean = getmean)
+    get <- function() cached_matrix
+    setsolve <- function(solve_value) cached_solve <<- solve_value
+    getsolve <- function() cached_solve
+    list(
+        set      = set, 
+        get      = get,
+        setsolve = setsolve,
+        getsolve = getsolve
+    )
 }
 
 
-## Write a short comment describing this function
+## cacheSolve  computes the inverse of the special "matrix" returned by makeCacheMatrix above. 
+## If the inverse has already been calculated (and the matrix has not changed), 
+## then the cachesolve retrieves the inverse from the cache.
 
 cacheSolve <- function(x, ...) {
-        ## Return a matrix that is the inverse of 'x'
-##  cachemean <- function(x, ...) {
-    m <- x$getmean()
-    if(!is.null(m)) {
+    ## Return a matrix that is the inverse of 'x'
+    cached_solve <- x$getsolve()
+    if(!is.null(cached_solve)) {
       message("getting cached data")
-      return(m)
+      return(cached_solve)
     }
-    data <- x$get()
-    m <- mean(data, ...)
-    x$setmean(m)
-    m
+    cached_matrix <- x$get()
+    value <- solve(cached_matrix, ...)
+    x$setsolve(value)
+    value
 }
+
+
+## Uncomment next lines to see the functions in action 
+##
+## m <- matrix(c(-1, -2, 1, 1), 2,2)
+## x <- makeCacheMatrix(m)
+## print(x$get())
+## inv <- cacheSolve(x)
+## print(inv)
+## inv <- cacheSolve(x)
+## print(inv)
